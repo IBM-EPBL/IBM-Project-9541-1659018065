@@ -117,15 +117,15 @@ Diagram.json:
   "author": "SUMAIYA M",
   "editor": "wokwi",
   "parts": [
-    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 197.21, "left": -247.7, "attrs": {} },
-    { "type": "wokwi-hc-sr04", "id": "ultrasonic1", "top": 62.61, "left": -57.16, "attrs": {} }
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 269.16, "left": -215.21, "attrs": {} },
+    { "type": "wokwi-hc-sr04", "id": "ultrasonic1", "top": -2.16, "left": 33.02, "attrs": {} }
   ],
   "connections": [
     [ "esp:TX0", "$serialMonitor:RX", "", [] ],
     [ "esp:RX0", "$serialMonitor:TX", "", [] ],
     [ "esp:GND.1", "ultrasonic1:GND", "black", [ "v45.24", "h-166.79", "v-36" ] ],
+    [ "esp:D5", "ultrasonic1:TRIG", "cyan", [ "v66.57", "h-140.34", "v-114" ] ],
     [ "esp:VIN", "ultrasonic1:VCC", "red", [ "h-25.02", "v-247.55" ] ],
-    [ "esp:D19", "ultrasonic1:ECHO", "green", [ "v28.57", "h-124.23", "v-94", "h-8.67" ] ],
-    [ "esp:D5", "ultrasonic1:TRIG", "green", [ "v66.57", "h-140.34", "v-114" ] ]
+    [ "esp:D18", "ultrasonic1:ECHO", "magenta", [ "v28.57", "h-124.23", "v-94", "h-8.67" ] ]
   ]
 }
