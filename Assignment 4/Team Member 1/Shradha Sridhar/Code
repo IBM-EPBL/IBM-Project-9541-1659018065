@@ -1,0 +1,130 @@
+#include <WiFi.h>
+#include <PubSubClient.h>
+void callback(char* subscribetopic, byte* payload, unsigned int
+payloadLength);
+//-------credentials of IBM Accounts------
+#define ORG "kotoq5"//IBM ORGANITION ID
+#define DEVICE_TYPE "ESP32"//Device type mentioned in ibm watson IOT Platform
+#define DEVICE_ID "12345"//Device ID mentioned in ibm watson IOT Platform
+#define TOKEN "12345678" //Token
+String data3;
+char server[] = ORG ".messaging.internetofthings.ibmcloud.com";
+char publishTopic[] = "iot-2/evt/Data/fmt/json";
+char subscribetopic[] = "iot-2/cmd/test/fmt/String";
+char authMethod[] = "use-token-auth";
+char token[] = TOKEN;
+char clientId[] = "d:" ORG ":" DEVICE_TYPE ":" DEVICE_ID;
+WiFiClient wifiClient;
+PubSubClient client(server, 1883, callback ,wifiClient);
+const int trigPin = 5;
+const int echoPin = 18;
+#define SOUND_SPEED 0.034
+long duration;
+float distance;
+void setup() {
+Serial.begin(115200);
+pinMode(trigPin, OUTPUT);
+pinMode(echoPin, INPUT);
+wificonnect();
+mqttconnect();
+}
+void loop()
+{
+digitalWrite(trigPin, LOW);
+delayMicroseconds(2);
+digitalWrite(trigPin, HIGH);
+delayMicroseconds(10);
+digitalWrite(trigPin, LOW);
+duration = pulseIn(echoPin, HIGH);
+distance = duration * SOUND_SPEED/2;
+Serial.print("Distance (cm): ");
+Serial.println(distance);
+if(distance<100)
+{
+Serial.println("ALERT!!");
+delay(1000);
+PublishData(distance);
+delay(1000);
+if (!client.loop()) {
+mqttconnect();
+}
+}
+delay(1000);
+}
+void PublishData(float dist) {
+mqttconnect();
+String payload = "{\"Distance\":";
+payload += dist;
+payload += ",\"ALERT!!\":""\"Distance less than 100cms\"";
+payload += "}";
+Serial.print("Sending payload: ");
+Serial.println(payload);
+if (client.publish(publishTopic, (char*) payload.c_str())) {
+Serial.println("Publish ok");
+} else {
+Serial.println("Publish failed");
+}
+}
+void mqttconnect() {
+if (!client.connected()) {
+Serial.print("Reconnecting client to ");
+Serial.println(server);
+while (!!!client.connect(clientId, authMethod, token)) {
+Serial.print(".");
+delay(500);
+}
+initManagedDevice();
+Serial.println();
+}
+}
+void wificonnect()
+{
+Serial.println();
+Serial.print("Connecting to ");
+WiFi.begin("Wokwi-GUEST", "", 6);
+while (WiFi.status() != WL_CONNECTED) {
+delay(500);
+Serial.print(".");
+}
+Serial.println("");
+Serial.println("WiFi connected");
+Serial.println("IP address: ");
+Serial.println(WiFi.localIP());
+}
+void initManagedDevice() {
+if (client.subscribe(subscribetopic)) {
+Serial.println((subscribetopic));
+Serial.println("subscribe to cmd OK");
+} else {
+Serial.println("subscribe to cmd FAILED");
+}
+}
+void callback(char* subscribetopic, byte* payload, unsigned int payloadLength)
+{
+Serial.print("callback invoked for topic: ");
+Serial.println(subscribetopic);
+for (int i = 0; i < payloadLength; i++) {
+//Serial.print((char)payload[i]);
+data3 += (char)payload[i];
+}
+Serial.println("data: "+ data3);
+data3="";
+}
+Diagram.json:
+{
+"version": 1,
+"author": "Shradha",
+"editor": "wokwi",
+"parts": [
+{ "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": -2.67, "left": -128.67, "attrs": {} },
+{ "type": "wokwi-hc-sr04", "id": "ultrasonic1", "top": 41.63, "left": 72.17, "attrs": {} }
+],
+"connections": [
+[ "esp:TX0", "$serialMonitor:RX", "", [] ],
+[ "esp:RX0", "$serialMonitor:TX", "", [] ],
+[ "ultrasonic1:VCC", "esp:VIN", "red", [ "v97.24", "h-304.45", "v-75.33" ] ],
+[ "ultrasonic1:TRIG", "esp:D5", "green", [ "v66.57", "h-140.34", "v-114" ] ],
+[ "ultrasonic1:ECHO", "esp:D19", "green", [ "v28.57", "h-124.23", "v-94", "h-8.67" ] ],
+[ "ultrasonic1:GND", "esp:GND.1", "black", [ "v45.24", "h-166.79", "v-36" ] ]
+]
+}
